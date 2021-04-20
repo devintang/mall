@@ -12,3 +12,16 @@ export function request(config) {
 
   return instance(config)
 }
+
+export function requestLocal(config) {
+  const instance = axios.create({
+    baseURL: 'http://127.0.0.1:8080',
+    timeout: 5000
+  })
+
+  instance.interceptors.response.use(res => {
+    return res.data
+  }, error => console.log(error))
+
+  return instance(config)
+}

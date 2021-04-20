@@ -15,6 +15,7 @@
           <tab-control class="tab-control" :titles="['流行', '新款', '精选']" @tabClick="tabClick"/>
           <goods-list :goods="showGoods"/>
         </scroll>
+        <!-- <div>呵呵呵呵</div> -->
         <back-top @click.native="backClick" :isShowBackTop="isShowBackTop"/>
     </div>
 </template>
@@ -65,6 +66,11 @@ export default {
       this.getHomeGoods('new')
       this.getHomeGoods('sell')
     },
+    mounted() {
+      this.$bus.$on('itemImageLoad', () => {
+        this.$refs.scroll.refresh()
+      })
+    },
     computed: {
       showGoods() {
         return this.goods[this.currentGoodsType].list
@@ -90,7 +96,8 @@ export default {
         this.$refs.scroll.scrollTo(0, 0)
       },
       contentScroll(position) {
-        this.isShowBackTop = (-position.y) > 504
+        // console.log(position)
+        this.isShowBackTop = (-position.y) > 800
       },
       loadMore() {
         console.log('load more')

@@ -3,16 +3,19 @@
         <nav-bar class="home-nav">
             <div slot="center">购物街</div>
         </nav-bar>
+        <tab-control class="tab-control" :titles="['流行', '新款', '精选']" 
+            @tabClick="tabClick" ref="tabControl1" v-show="isTabFixed"/>
         <scroll class="content" 
           ref="scroll"
           :probeType="3"
           :pull-up-load="true"
           @scroll="contentScroll"
           @pullingUp="loadMore">
-          <home-swiper :banners="banners"></home-swiper>
+          <home-swiper :banners="banners" @swiperImageLoad="swiperImageLoad"></home-swiper>
           <recommend-view :recommends="recommends" />
           <feature-view />
-          <tab-control class="tab-control" :titles="['流行', '新款', '精选']" @tabClick="tabClick"/>
+          <tab-control :titles="['流行', '新款', '精选']" 
+            @tabClick="tabClick" ref="tabControl2"/>
           <goods-list :goods="showGoods"/>
         </scroll>
         <!-- <div>呵呵呵呵</div> -->
@@ -21,6 +24,7 @@
 </template>
 
 <script>
+import {debounce} from 'common/utils'
 import NavBar from 'components/common/navbar/NavBar'
 import Scroll from 'components/common/scroll/Scroll'
 import TabControl from 'components/content/tabControl/TabControl'
@@ -57,6 +61,9 @@ export default {
           sell: {page: 0, list: []}
         },
         currentGoodsType: 'pop',
+        tabOffsetTop: 0,
+        isTabFixed: false,
+        scrollY: 0,
       }
     },
     created () {
@@ -67,8 +74,10 @@ export default {
       this.getHomeGoods('sell')
     },
     mounted() {
+      const refresh = debounce(this.$refs.scroll.refresh, 1000)
       this.$bus.$on('itemImageLoad', () => {
-        this.$refs.scroll.refresh()
+        // this.$refs.scroll.refresh()
+        refresh()
       })
     },
     computed: {
@@ -76,7 +85,19 @@ export default {
         return this.goods[this.currentGoodsType].list
       }
     },
+    activated() {
+      this.$refs.scroll.scrollTo(0, this.scrollY, 0)
+      this.$refs.scroll.refresh()
+    },
+    deactivated() {
+      this.scrollY = this.$refs.scroll.getScrollY()
+    },
     methods: {
+      swiperImageLoad() {
+        this.tabOffsetTop = this.$refs.tabControl2.$el.offsetTop
+        // console.log('tab-offset-top:', this.tabOffsetTop)
+      },
+
       tabClick(index) {
         switch(index) {
           case 0:
@@ -91,13 +112,19 @@ export default {
           default:
             console.log('invalid goods type:', index)
         }
+        this.$refs.tabControl1.currentIndex = index
+        this.$refs.tabControl2.currentIndex = index
       },
       backClick() {
         this.$refs.scroll.scrollTo(0, 0)
       },
       contentScroll(position) {
+        // 判断backTop是否显示
         // console.log(position)
         this.isShowBackTop = (-position.y) > 800
+
+        // 判断tabControl是否吸顶
+        this.isTabFixed = (-position.y) > this.tabOffsetTop
       },
       loadMore() {
         console.log('load more')
@@ -127,7 +154,7 @@ export default {
 
 <style lang="scss" scoped>
   #home {
-    padding-top: 44px;
+    // padding-top: 44px;
     height: 100vh;
     position: relative;
   }
@@ -136,16 +163,19 @@ export default {
     background-color: var(--color-tint);
     color: white;
 
-    position: fixed;
-    left: 0;
-    right: 0;
-    top: 0;
+    // position: fixed;
+    // left: 0;
+    // right: 0;
+    // top: 0;
+    position: relative;
     z-index: 9;
   }
 
   .tab-control {
-    position: sticky;
-    top: 44px;
+    // position: sticky;
+    // top: 44px;
+    // z-index: 9;
+    position: relative;
     z-index: 9;
   }
 

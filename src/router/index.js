@@ -28,6 +28,11 @@ const routes = [
     path: '/profile',
     name: 'Profile',
     component: () => import(/* webpackChunkName: "profile" */ 'views/profile/Profile.vue')
+  },
+  {
+    path: '/detail/:id',
+    name: 'Detail',
+    component: () => import(/* webpackChunkName: "profile" */ 'views/detail/Detail.vue')
   }
   // {
   //   path: '/about',
